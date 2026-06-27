@@ -132,5 +132,8 @@ def bulk_route():
         return jsonify({"error": "Provide 1–20 texts"}), 400
     return jsonify([analyze_full(t[:512]) for t in texts if t.strip()])
 
+import os
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host="0.0.0.0", port=port)
