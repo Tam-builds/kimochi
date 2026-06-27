@@ -6,7 +6,7 @@ colorTo: purple
 sdk: docker
 pinned: false
 license: mit
-short_description: Flask-based sentiment and emotion analysis using Transformers.
+short_description: AI sentiment & emotion analyzer
 ---
 
 # Kimochi ✦ v2 — Sentiment & Emotion AI
