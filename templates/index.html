@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kimochi ✦ v2 — Sentiment & Emotion AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#F5F0FF;--bg2:#EDE9FE;--surface:#FFF;--surface2:#F9F7FF;
+      --border:#E0D9FF;--border2:#C4B5FD;
+      --accent:#7C3AED;--accent2:#A78BFA;--accent3:#C084FC;
+      --grad:linear-gradient(135deg,#C084FC 0%,#7C3AED 55%,#4F46E5 100%);
+      --text:#1E1047;--text2:#5B21B6;--text3:#8B5CF6;--muted:#9CA3AF;
+      --pos:#059669;--pos-bg:#D1FAE5;--pos-b:#6EE7B7;
+      --neg:#DC2626;--neg-bg:#FEE2E2;--neg-b:#FCA5A5;
+      --neu:#D97706;--neu-bg:#FEF3C7;--neu-b:#FCD34D;
+      --shadow:0 2px 12px rgba(124,58,237,.08);
+      --shadow-lg:0 8px 40px rgba(124,58,237,.16);
+      --r:12px;--r-lg:18px;
+    }
+    body{background:var(--bg);
+      background-image:radial-gradient(ellipse at 5% 5%,rgba(192,132,252,.2) 0%,transparent 50%),
+                       radial-gradient(ellipse at 95% 95%,rgba(129,140,248,.15) 0%,transparent 50%);
+      color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;padding-bottom:80px;}
+
+    /* NAV */
+    .nav{background:rgba(255,255,255,.85);backdrop-filter:blur(14px);
+         border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:100;}
+    .nav-inner{max-width:920px;margin:0 auto;padding:0 20px;
+               display:flex;align-items:center;justify-content:space-between;height:58px;}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;
+           letter-spacing:-.03em;text-decoration:none;color:var(--text);}
+    .brand-icon{width:34px;height:34px;background:var(--grad);border-radius:10px;
+                display:flex;align-items:center;justify-content:center;font-size:16px;
+                box-shadow:0 3px 10px rgba(124,58,237,.35);}
+    .brand-grd{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .nav-tabs{display:flex;gap:4px;}
+    .tab{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;
+         border:1.5px solid transparent;transition:all .15s;color:var(--muted);}
+    .tab.active{background:var(--bg2);border-color:var(--border2);color:var(--accent);}
+    .tab:hover:not(.active){color:var(--text2);}
+
+    /* HERO */
+    .hero{max-width:920px;margin:0 auto;padding:48px 20px 0;text-align:center;}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;
+             letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+             background:var(--bg2);border:1.5px solid var(--border2);
+             padding:5px 14px;border-radius:20px;margin-bottom:18px;}
+    h1{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:900;letter-spacing:-.04em;
+       line-height:1.08;margin-bottom:12px;}
+    .grd{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .tagline{font-size:14px;color:var(--muted);margin-bottom:36px;font-weight:600;line-height:1.6;}
+
+    /* PANELS */
+    .panel{max-width:920px;margin:0 auto;padding:0 20px;display:none;}
+    .panel.active{display:block;}
+
+    /* CHIPS */
+    .chips-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+                 color:var(--muted);margin-bottom:10px;}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+    .chip{background:var(--surface);border:1.5px solid var(--border2);border-radius:20px;
+          padding:6px 14px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;
+          transition:all .15s;}
+    .chip:hover,.chip.active{background:var(--bg2);border-color:var(--accent2);color:var(--accent);}
+
+    /* INPUT CARD */
+    .input-card{background:var(--surface);border:2px solid var(--border2);
+                border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-lg);margin-bottom:14px;}
+    .input-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .input-label{font-size:12px;font-weight:800;text-transform:uppercase;
+                 letter-spacing:.1em;color:var(--text2);}
+    .live-badge{font-size:10px;font-weight:800;background:var(--pos-bg);color:var(--pos);
+                border:1.5px solid var(--pos-b);border-radius:12px;padding:3px 10px;
+                display:flex;align-items:center;gap:5px;}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--pos);
+              animation:pulse 1.5s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .char-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+    .char-count{font-size:11px;font-weight:700;color:var(--muted);}
+    .char-count.warn{color:var(--neg);}
+    textarea{width:100%;background:var(--bg2);border:1.5px solid var(--border);
+             border-radius:var(--r);color:var(--text);font-size:14px;font-weight:600;
+             font-family:'Nunito',sans-serif;padding:14px 16px;outline:none;
+             resize:vertical;min-height:120px;line-height:1.6;
+             transition:border-color .2s,box-shadow .2s,background .2s;}
+    textarea:focus{border-color:var(--accent2);background:#fff;
+                   box-shadow:0 0 0 3px rgba(167,139,250,.2);}
+    textarea::placeholder{color:var(--muted);font-weight:500;}
+    .btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+    .btn-primary{background:var(--grad);color:#fff;border:none;border-radius:11px;
+                 padding:12px 24px;font-size:14px;font-weight:800;
+                 font-family:'Nunito',sans-serif;cursor:pointer;
+                 box-shadow:0 4px 14px rgba(124,58,237,.35);
+                 display:flex;align-items:center;gap:8px;
+                 transition:opacity .15s,transform .1s;}
+    .btn-primary:hover{opacity:.9;}
+    .btn-primary:active{transform:scale(.97);}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    .btn-sec{background:var(--bg2);border:1.5px solid var(--border2);color:var(--text3);
+             border-radius:10px;padding:11px 18px;font-size:13px;font-weight:700;
+             font-family:'Nunito',sans-serif;cursor:pointer;
+             transition:background .15s,color .15s;}
+    .btn-sec:hover{background:var(--border);color:var(--accent);}
+
+    /* RESULTS GRID */
+    .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+    @media(max-width:640px){.results-grid{grid-template-columns:1fr;}}
+
+    /* RESULT CARD */
+    .res-card{background:var(--surface);border:2px solid var(--border);
+              border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);}
+    .res-card.pos{border-color:var(--pos-b);background:linear-gradient(135deg,#fff,#F0FDF9);}
+    .res-card.neg{border-color:var(--neg-b);background:linear-gradient(135deg,#fff,#FFF5F5);}
+    .res-card.neu{border-color:var(--neu-b);background:linear-gradient(135deg,#fff,#FFFBF0);}
+    .res-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+               color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+    .res-main{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+    .res-emoji{font-size:44px;line-height:1;}
+    .res-sentiment{font-size:24px;font-weight:900;letter-spacing:-.03em;}
+    .res-sentiment.pos{color:var(--pos);}
+    .res-sentiment.neg{color:var(--neg);}
+    .res-sentiment.neu{color:var(--neu);}
+    .res-score-label{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+
+    /* CONFIDENCE BAR */
+    .conf-wrap{margin-bottom:16px;}
+    .conf-head{display:flex;justify-content:space-between;align-items:center;
+               font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px;}
+    .conf-pct{font-size:16px;font-weight:900;}
+    .conf-pct.pos{color:var(--pos);}.conf-pct.neg{color:var(--neg);}.conf-pct.neu{color:var(--neu);}
+    .bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+    .bar-fill.pos{background:linear-gradient(90deg,#34D399,#059669);}
+    .bar-fill.neg{background:linear-gradient(90deg,#FC8181,#DC2626);}
+    .bar-fill.neu{background:linear-gradient(90deg,#FCD34D,#D97706);}
+
+    /* STATS ROW */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .stat-cell{background:var(--surface2);border:1.5px solid var(--border);
+               border-radius:10px;padding:10px;text-align:center;}
+    .stat-val{font-size:18px;font-weight:900;color:var(--accent);line-height:1;}
+    .stat-lbl{font-size:9px;font-weight:800;text-transform:uppercase;
+              letter-spacing:.08em;color:var(--muted);margin-top:3px;}
+
+    /* EMOTION CARD */
+    .emotion-card{background:var(--surface);border:2px solid var(--border);
+                  border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);
+                  margin-bottom:14px;}
+    .emotion-title{font-size:11px;font-weight:800;text-transform:uppercase;
+                   letter-spacing:.1em;color:var(--muted);margin-bottom:16px;}
+    .emotion-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .emotion-row{display:flex;align-items:center;gap:10px;}
+    .em-emoji{font-size:20px;flex-shrink:0;}
+    .em-info{flex:1;}
+    .em-label{font-size:12px;font-weight:800;color:var(--text2);text-transform:capitalize;margin-bottom:3px;}
+    .em-bar-wrap{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+    .em-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+    .em-pct{font-size:11px;font-weight:800;color:var(--muted);margin-left:auto;flex-shrink:0;}
+    .top-emotion{display:flex;align-items:center;gap:12px;
+                 background:var(--bg2);border:1.5px solid var(--border2);
+                 border-radius:var(--r);padding:12px 16px;margin-bottom:14px;}
+    .top-em-emoji{font-size:32px;}
+    .top-em-label{font-size:16px;font-weight:900;text-transform:capitalize;color:var(--text);}
+    .top-em-sub{font-size:12px;color:var(--muted);font-weight:600;}
+
+    /* SENTENCE BREAKDOWN */
+    .sent-card{background:var(--surface);border:2px solid var(--border);
+               border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);margin-bottom:14px;}
+    .sent-title{font-size:11px;font-weight:800;text-transform:uppercase;
+                letter-spacing:.1em;color:var(--muted);margin-bottom:14px;}
+    .sent-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;
+               border-bottom:1.5px solid var(--border);}
+    .sent-item:last-child{border-bottom:none;}
+    .sent-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:12px;
+                white-space:nowrap;flex-shrink:0;margin-top:2px;}
+    .sent-badge.pos{background:var(--pos-bg);color:var(--pos);}
+    .sent-badge.neg{background:var(--neg-bg);color:var(--neg);}
+    .sent-badge.neu{background:var(--neu-bg);color:var(--neu);}
+    .sent-text{font-size:13px;font-weight:600;color:var(--text2);line-height:1.5;}
+    .sent-score{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px;}
+
+    /* COMPARE */
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+    @media(max-width:640px){.compare-grid{grid-template-columns:1fr;}}
+    .compare-input{background:var(--surface);border:2px solid var(--border2);
+                   border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow);}
+    .compare-label{font-size:12px;font-weight:800;text-transform:uppercase;
+                   letter-spacing:.1em;color:var(--text2);margin-bottom:10px;}
+    .compare-result{background:var(--surface);border:2px solid var(--border);
+                    border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow);display:none;}
+    .vs-badge{text-align:center;font-size:20px;font-weight:900;color:var(--accent2);
+              padding:14px;background:var(--bg2);border-radius:var(--r);
+              border:1.5px solid var(--border2);margin-bottom:14px;display:none;}
+
+    /* HISTORY */
+    .history-card{background:var(--surface);border:1.5px solid var(--border);
+                  border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
+    .hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .hist-title{font-size:14px;font-weight:800;color:var(--text2);}
+    .hist-clear{background:none;border:none;font-size:12px;font-weight:700;
+                color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;}
+    .hist-clear:hover{color:var(--neg);}
+    .hist-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
+    .hist-item{display:flex;align-items:center;gap:10px;background:var(--bg2);
+               border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;
+               cursor:pointer;transition:background .12s;}
+    .hist-item:hover{background:var(--border);}
+    .hist-em{font-size:20px;flex-shrink:0;}
+    .hist-txt{font-size:12px;font-weight:600;color:var(--text2);flex:1;
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .hist-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:12px;white-space:nowrap;}
+    .hist-badge.pos{background:var(--pos-bg);color:var(--pos);}
+    .hist-badge.neg{background:var(--neg-bg);color:var(--neg);}
+    .hist-badge.neu{background:var(--neu-bg);color:var(--neu);}
+    .hist-time{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;}
+
+    /* EXPORT */
+    .export-row{display:flex;gap:8px;margin-bottom:14px;}
+    .export-btn{background:var(--surface);border:1.5px solid var(--border2);color:var(--text2);
+                border-radius:9px;padding:9px 16px;font-size:12px;font-weight:700;
+                cursor:pointer;font-family:'Nunito',sans-serif;
+                display:flex;align-items:center;gap:6px;
+                transition:background .15s,color .15s;}
+    .export-btn:hover{background:var(--bg2);color:var(--accent);}
+
+    /* ERROR */
+    .err{background:#FEE2E2;border:1.5px solid #FECACA;border-radius:var(--r);
+         padding:12px 16px;font-size:13px;font-weight:700;color:#DC2626;
+         display:none;margin-bottom:14px;align-items:center;gap:8px;}
+
+    /* SPINNER */
+    .spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.4);
+          border-top-color:#fff;border-radius:50%;
+          animation:spin .5s linear infinite;display:inline-block;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* LOADING SKELETON */
+    .skeleton{background:linear-gradient(90deg,var(--border) 25%,var(--bg2) 50%,var(--border) 75%);
+              background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:8px;}
+    @keyframes shimmer{to{background-position:-200% 0;}}
+
+    /* SLIDE IN */
+    .slide-in{animation:slideUp .3s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    .deco{position:fixed;pointer-events:none;z-index:0;
+          font-size:20px;opacity:.1;animation:float 8s ease-in-out infinite;}
+    .deco:nth-child(1){top:10%;right:5%;}.deco:nth-child(2){top:55%;left:2%;animation-delay:3s;}
+    .deco:nth-child(3){bottom:18%;right:8%;animation-delay:5s;font-size:14px;}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+
+    footer{max-width:920px;margin:48px auto 0;padding:20px;
+           border-top:1.5px solid var(--border);display:flex;
+           justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600;}
+    footer a{color:var(--accent2);text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="deco">✦</div><div class="deco">✧</div><div class="deco">💜</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <div class="brand-icon">💭</div>
+      <span class="brand-grd">Kimochi</span> ✦
+    </a>
+    <div class="nav-tabs">
+      <div class="tab active" onclick="switchTab('analyse')">✦ Analyse</div>
+      <div class="tab" onclick="switchTab('compare')">⚖ Compare</div>
+      <div class="tab" onclick="switchTab('history')">📝 History</div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="eyebrow">✦ Sentiment + Emotion AI · v2</div>
+  <h1>What does your<br>text <span class="grd">feel? ✦</span></h1>
+  <p class="tagline">Powered by DistilBERT · Detects sentiment, 6 emotions & sentence-level breakdown</p>
+</section>
+
+<!-- ═══════════ ANALYSE PANEL ═══════════ -->
+<div class="panel active" id="panel-analyse">
+
+  <div class="chips-label">Try an example ✦</div>
+  <div class="chips">
+    <div class="chip" onclick="useChip(this)">😊 This product is absolutely amazing, I love it!</div>
+    <div class="chip" onclick="useChip(this)">😔 Worst experience ever, completely disappointed</div>
+    <div class="chip" onclick="useChip(this)">😐 It was decent, nothing special really</div>
+    <div class="chip" onclick="useChip(this)">😄 I am so happy and excited about this!</div>
+    <div class="chip" onclick="useChip(this)">😠 This is absolutely unacceptable and infuriating</div>
+    <div class="chip" onclick="useChip(this)">😨 I am terrified of what might happen next</div>
+  </div>
+
+  <div class="input-card">
+    <div class="input-top">
+      <div class="input-label">✦ Enter your text</div>
+      <div class="live-badge"><div class="live-dot"></div> Live Analysis</div>
+    </div>
+    <textarea id="txt" placeholder="Paste any review, tweet, comment, message, or paragraph here…" oninput="onType()"></textarea>
+    <div class="char-row">
+      <span class="char-count" id="cc">0 / 5000</span>
+      <span style="font-size:11px;color:var(--muted);font-weight:600;">Ctrl+Enter to analyse</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="analyse-btn" onclick="doAnalyse()">✦ Analyse Feeling</button>
+      <button class="btn-sec" onclick="clearAll()">Clear</button>
+      <button class="btn-sec" id="export-json-btn" onclick="exportJSON()" style="display:none">⬇ Export JSON</button>
+    </div>
+  </div>
+
+  <div class="err" id="err">⚠ <span id="err-txt"></span></div>
+
+  <!-- RESULTS -->
+  <div id="results" style="display:none" class="slide-in">
+
+    <!-- Sentiment + Stats -->
+    <div class="results-grid">
+      <div class="res-card" id="sent-card">
+        <div class="res-title">📊 Overall Sentiment</div>
+        <div class="res-main">
+          <div class="res-emoji" id="r-emoji">😊</div>
+          <div>
+            <div class="res-sentiment" id="r-label">POSITIVE</div>
+            <div class="res-score-label" id="r-sub">Confidence score</div>
+          </div>
+        </div>
+        <div class="conf-wrap">
+          <div class="conf-head">
+            Confidence <span class="conf-pct" id="r-pct">0%</span>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill" id="r-bar"></div></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-cell"><div class="stat-val" id="r-words">0</div><div class="stat-lbl">Words</div></div>
+          <div class="stat-cell"><div class="stat-val" id="r-sents">0</div><div class="stat-lbl">Sentences</div></div>
+          <div class="stat-cell"><div class="stat-val" id="r-ms">0ms</div><div class="stat-lbl">Time</div></div>
+        </div>
+      </div>
+
+      <!-- Top Emotion -->
+      <div class="res-card" id="em-card">
+        <div class="res-title">🎭 Dominant Emotion</div>
+        <div class="top-emotion">
+          <div class="top-em-emoji" id="top-em-emoji">😄</div>
+          <div>
+            <div class="top-em-label" id="top-em-label">Joy</div>
+            <div class="top-em-sub" id="top-em-sub">Detected with 0% confidence</div>
+          </div>
+        </div>
+        <div class="emotion-grid" id="emotion-grid"></div>
+      </div>
+    </div>
+
+    <!-- Sentence Breakdown -->
+    <div class="sent-card" id="sent-breakdown" style="display:none">
+      <div class="sent-title">📝 Sentence-by-Sentence Breakdown</div>
+      <div id="sent-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ COMPARE PANEL ═══════════ -->
+<div class="panel" id="panel-compare">
+  <div class="compare-grid">
+    <div class="compare-input">
+      <div class="compare-label">✦ Text A</div>
+      <textarea id="cmp-a" placeholder="First text to compare…" style="min-height:100px"></textarea>
+    </div>
+    <div class="compare-input">
+      <div class="compare-label">✦ Text B</div>
+      <textarea id="cmp-b" placeholder="Second text to compare…" style="min-height:100px"></textarea>
+    </div>
+  </div>
+  <div style="text-align:center;margin-bottom:14px;">
+    <button class="btn-primary" onclick="doCompare()">⚖ Compare Both ✦</button>
+  </div>
+  <div class="err" id="cmp-err">⚠ <span id="cmp-err-txt"></span></div>
+  <div class="vs-badge" id="vs-badge">Text A vs Text B</div>
+  <div class="compare-grid" id="cmp-results">
+    <div class="compare-result" id="cmp-r1"></div>
+    <div class="compare-result" id="cmp-r2"></div>
+  </div>
+</div>
+
+<!-- ═══════════ HISTORY PANEL ═══════════ -->
+<div class="panel" id="panel-history">
+  <div class="history-card">
+    <div class="hist-header">
+      <div class="hist-title">📝 Analysis History</div>
+      <button class="hist-clear" onclick="clearHist()">Clear all</button>
+    </div>
+    <div class="hist-list" id="hist-list">
+      <div style="text-align:center;color:var(--muted);padding:24px;font-size:13px;font-weight:600;">
+        No history yet — analyse some text first ✦
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Kimochi v2 ✦ · Flask + DistilBERT + Emotion AI · <a href="/analyze" target="_blank">API</a></span>
+  <span>Made with 💜</span>
+</footer>
+
+<script>
+  let lastResult = null;
+  let history    = [];
+  let debounceT  = null;
+
+  // ── TAB SWITCH ──────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'history') renderHist();
+  }
+
+  // ── CHAR COUNT + DEBOUNCE ───────────────────────────────────
+  function onType() {
+    const v = document.getElementById('txt').value;
+    const el = document.getElementById('cc');
+    el.textContent = `${v.length} / 5000`;
+    el.className = 'char-count' + (v.length > 4500 ? ' warn' : '');
+    clearTimeout(debounceT);
+    if (v.trim().length > 10) debounceT = setTimeout(doAnalyse, 900);
+  }
+
+  function useChip(el) {
+    const raw = el.textContent.replace(/^[\u{1F600}-\u{1FFFF}\s]+/u,'').trim();
+    document.getElementById('txt').value = raw;
+    onType();
+  }
+
+  function clearAll() {
+    document.getElementById('txt').value = '';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('err').style.display = 'none';
+    document.getElementById('export-json-btn').style.display = 'none';
+    document.getElementById('cc').textContent = '0 / 5000';
+    lastResult = null;
+  }
+
+  // ── ANALYSE ─────────────────────────────────────────────────
+  async function doAnalyse() {
+    const text = document.getElementById('txt').value.trim();
+    const btn  = document.getElementById('analyse-btn');
+    const err  = document.getElementById('err');
+    const res  = document.getElementById('results');
+
+    err.style.display = 'none';
+    if (!text) { showErr('Please enter some text ✦', 'err', 'err-txt'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Analysing…';
+
+    try {
+      const r = await fetch('/analyze', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text })
+      });
+      const data = await r.json();
+      if (!r.ok) { showErr(data.error, 'err', 'err-txt'); return; }
+      lastResult = data;
+      renderResult(data);
+      addHist(data, text);
+      res.style.display = 'block';
+      document.getElementById('export-json-btn').style.display = 'flex';
+    } catch(e) {
+      showErr('Network error — is the server running?', 'err', 'err-txt');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✦ Analyse Feeling';
+    }
+  }
+
+  // ── RENDER RESULT ────────────────────────────────────────────
+  function renderResult(data) {
+    const s  = data.sentiment;
+    const lc = s.label.toLowerCase() === 'positive' ? 'pos' : s.label.toLowerCase() === 'negative' ? 'neg' : 'neu';
+
+    // Sentiment card
+    document.getElementById('sent-card').className = `res-card ${lc}`;
+    document.getElementById('r-emoji').textContent  = s.emoji;
+    document.getElementById('r-label').textContent  = s.label;
+    document.getElementById('r-label').className    = `res-sentiment ${lc}`;
+    document.getElementById('r-sub').textContent    = `${s.score}% confidence`;
+    document.getElementById('r-pct').textContent    = `${s.score}%`;
+    document.getElementById('r-pct').className      = `conf-pct ${lc}`;
+    const bar = document.getElementById('r-bar');
+    bar.className = `bar-fill ${lc}`;
+    bar.style.width = '0%';
+    setTimeout(() => bar.style.width = s.score + '%', 60);
+
+    // Stats
+    document.getElementById('r-words').textContent = data.stats.word_count;
+    document.getElementById('r-sents').textContent = data.stats.sentence_count;
+    document.getElementById('r-ms').textContent    = data.stats.time_ms + 'ms';
+
+    // Top emotion
+    const te = data.top_emotion;
+    document.getElementById('top-em-emoji').textContent = te.emoji || '✨';
+    document.getElementById('top-em-label').textContent = te.label || '—';
+    document.getElementById('top-em-sub').textContent   = `Detected with ${te.score || 0}% confidence`;
+
+    // Emotion grid
+    const eg = document.getElementById('emotion-grid');
+    eg.innerHTML = data.emotions.map(e => `
+      <div class="emotion-row">
+        <span class="em-emoji">${e.emoji}</span>
+        <div class="em-info">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="em-label">${e.label}</div>
+            <div class="em-pct">${e.score}%</div>
+          </div>
+          <div class="em-bar-wrap">
+            <div class="em-bar" style="width:${e.score}%;background:${e.color}"></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Sentence breakdown
+    const sl = document.getElementById('sent-list');
+    const sb = document.getElementById('sent-breakdown');
+    if (data.sentences && data.sentences.length > 1) {
+      sb.style.display = 'block';
+      sl.innerHTML = data.sentences.map(s => {
+        const sc = s.label.toLowerCase() === 'positive' ? 'pos' : s.label.toLowerCase() === 'negative' ? 'neg' : 'neu';
+        return `
+          <div class="sent-item">
+            <span class="sent-badge ${sc}">${s.emoji} ${s.label}</span>
+            <div>
+              <div class="sent-text">${s.text}</div>
+              <div class="sent-score">${s.score}% confidence</div>
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      sb.style.display = 'none';
+    }
+  }
+
+  // ── COMPARE ─────────────────────────────────────────────────
+  async function doCompare() {
+    const t1 = document.getElementById('cmp-a').value.trim();
+    const t2 = document.getElementById('cmp-b').value.trim();
+    if (!t1 || !t2) { showErr('Both texts required', 'cmp-err', 'cmp-err-txt'); return; }
+
+    const r = await fetch('/analyze/compare', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text1:t1, text2:t2 })
+    });
+    const data = await r.json();
+    if (!r.ok) { showErr(data.error, 'cmp-err', 'cmp-err-txt'); return; }
+
+    renderCompare('cmp-r1', data.result1, 'A');
+    renderCompare('cmp-r2', data.result2, 'B');
+    document.getElementById('vs-badge').style.display = 'block';
+    document.getElementById('cmp-r1').style.display = 'block';
+    document.getElementById('cmp-r2').style.display = 'block';
+  }
+
+  function renderCompare(elId, data, label) {
+    const s  = data.sentiment;
+    const lc = s.label.toLowerCase() === 'positive' ? 'pos' : s.label.toLowerCase() === 'negative' ? 'neg' : 'neu';
+    const el = document.getElementById(elId);
+    el.innerHTML = `
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Text ${label}</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <span style="font-size:36px;">${s.emoji}</span>
+        <div>
+          <div style="font-size:20px;font-weight:900;color:var(--${lc});">${s.label}</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600;">${s.score}% confidence</div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;">Top Emotion</div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:9px;padding:9px 12px;border:1.5px solid var(--border2);">
+        <span style="font-size:22px;">${data.top_emotion.emoji}</span>
+        <span style="font-size:14px;font-weight:800;text-transform:capitalize;">${data.top_emotion.label}</span>
+        <span style="font-size:12px;color:var(--muted);font-weight:600;margin-left:auto;">${data.top_emotion.score}%</span>
+      </div>
+    `;
+    el.className = `compare-result res-card ${lc}`;
+  }
+
+  // ── HISTORY ─────────────────────────────────────────────────
+  function addHist(data, text) {
+    const s = data.sentiment;
+    history.unshift({
+      data, text: text.substring(0, 70),
+      time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    });
+    if (history.length > 15) history.pop();
+  }
+
+  function renderHist() {
+    const el = document.getElementById('hist-list');
+    if (!history.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:24px;font-size:13px;font-weight:600;">No history yet ✦</div>';
+      return;
+    }
+    el.innerHTML = history.map((h, i) => {
+      const s  = h.data.sentiment;
+      const lc = s.label.toLowerCase() === 'positive' ? 'pos' : s.label.toLowerCase() === 'negative' ? 'neg' : 'neu';
+      return `
+        <div class="hist-item" onclick="loadHist(${i})">
+          <span class="hist-em">${s.emoji}</span>
+          <span class="hist-txt">${h.text}${h.text.length >= 70 ? '…' : ''}</span>
+          <span class="hist-badge ${lc}">${s.label} ${s.score}%</span>
+          <span class="hist-time">${h.time}</span>
+        </div>`;
+    }).join('');
+  }
+
+  function loadHist(i) {
+    const h = history[i];
+    document.getElementById('txt').value = h.text;
+    onType();
+    lastResult = h.data;
+    renderResult(h.data);
+    document.getElementById('results').style.display = 'block';
+    switchTab('analyse');
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.querySelectorAll('.tab')[2].classList.remove('active');
+  }
+
+  function clearHist() {
+    history = [];
+    renderHist();
+  }
+
+  // ── EXPORT ──────────────────────────────────────────────────
+  function exportJSON() {
+    if (!lastResult) return;
+    const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'kimochi-result.json';
+    a.click();
+  }
+
+  // ── UTILS ───────────────────────────────────────────────────
+  function showErr(msg, boxId, txtId) {
+    document.getElementById(txtId).textContent = msg;
+    document.getElementById(boxId).style.display = 'flex';
+  }
+
+  document.getElementById('txt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.ctrlKey) doAnalyse();
+  });
+</script>
+</body>
+</html>
